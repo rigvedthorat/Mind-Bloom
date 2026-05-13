@@ -5,7 +5,7 @@ import JournalCalendar from '@/sections/JournalCalendar';
 import JournalEntry from '@/sections/JournalEntry';
 import Moods from '@/sections/Moods';
 import { motion } from 'framer-motion';
-import { Calendar, Moon, Sun } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authAPI } from '../../api';
@@ -20,7 +20,7 @@ type User = {
 
 const Home = () => {
 	const [user, setUser] = useState<User | null>(null);
-	const [darkMode, setDarkMode] = useState(false);
+	const darkMode = false;
 
 	useEffect(() => {
 		const token = localStorage.getItem('token');

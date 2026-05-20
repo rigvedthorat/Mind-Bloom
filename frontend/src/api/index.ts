@@ -69,17 +69,17 @@ export const authAPI = {
 
 	// Login an existing user
 	login: async (
-		email: string,
+		username: string,
 		password: string
 	): Promise<{ message: string; token: string; user: any }> => {
-		console.log('Logging in user:', { email });
+		console.log('Logging in user:', { username });
 
 		const response = await fetch(`${API_URL}/auth/login`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ email, password }),
+			body: JSON.stringify({ username, password }),
 		});
 
 		const data = await handleResponse(response);

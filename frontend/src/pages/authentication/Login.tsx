@@ -7,7 +7,7 @@ import './auth.css';
 
 import { motion } from 'framer-motion';
 const Login = () => {
-	const [email, setEmail] = useState('');
+	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	// const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -15,25 +15,9 @@ const Login = () => {
 
 	const validateForm = () => {
 		// Basic validation
-		if (!email.trim()) {
-			// setError('Email is required');
-			toast.error('Email is required', {
-				position: 'top-right',
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: true,
-				pauseOnHover: true,
-				draggable: true,
-				progress: undefined,
-			});
-			return false;
-		}
-
-		// Simple email validation
-		const emailRegex = /\S+@\S+\.\S+/;
-		if (!emailRegex.test(email)) {
-			// setError('Please enter a valid email');
-			toast.error('Please enter a valid email', {
+		if (!username.trim()) {
+			// setError('Username is required');
+			toast.error('Username is required', {
 				position: 'top-right',
 				autoClose: 5000,
 				hideProgressBar: false,
@@ -76,7 +60,7 @@ const Login = () => {
 
 		try {
 			// Call the login API
-			await authAPI.login(email, password);
+			await authAPI.login(username, password);
 			// setSuccess(true);
 
 			// Redirect to home after successful login
@@ -144,18 +128,18 @@ const Login = () => {
 				<div className="flex flex-col justify-between mb-4 m-10 gap-1">
 					<div className="flex items-center gap-7 justify-between mt-2">
 						<label
-							htmlFor="email"
+							htmlFor="username"
 							className="block text-sm font-medium text-gray-700"
 						>
-							Email
+							Username
 						</label>
 						<input
-							type="email"
-							id="email"
-							name="email"
+							type="text"
+							id="username"
+							name="username"
 							className="form-input"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
 							disabled={loading}
 						/>
 					</div>

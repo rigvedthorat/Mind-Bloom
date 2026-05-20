@@ -18,11 +18,15 @@ export const registerAuthRoutes = (app: Express) => {
 				return res.status(400).json({ error: 'All fields are required' });
 			}
 
-			// Check if email already exists
-			const existingUser = await prisma.user.findUnique({ where: { email } });
+			// Check if username or email already exists
+			const existingUser = await prisma.user.findFirst({
+				where: { OR: [{ username }, { email }] },
+			});
 
 			if (existingUser) {
-				return res.status(400).json({ error: 'Email already registered' });
+				const field =
+					existingUser.username === username ? 'Username' : 'Email';
+				return res.status(400).json({ error: `${field} already registered` });
 			}
 
 			// Hash the password
@@ -44,17 +48,17 @@ export const registerAuthRoutes = (app: Express) => {
 	// Login user
 	app.post('/api/auth/login', async (req, res) => {
 		try {
-			const { email, password } = req.body;
+			const { username, password } = req.body;
 
 			// Basic validation
-			if (!email || !password) {
+			if (!username || !password) {
 				return res
 					.status(400)
-					.json({ error: 'Email and password are required' });
+					.json({ error: 'Username and password are required' });
 			}
 
 			// Check if user exists
-			const user = await prisma.user.findUnique({ where: { email } });
+			const user = await prisma.user.findUnique({ where: { username } });
 
 			if (!user) {
 				return res.status(401).json({ error: 'Invalid credentials' });

@@ -17,6 +17,7 @@ interface JournalEntry {
 	mood: string;
 	entry_date: string;
 	affirmation_content: string | null;
+	quote_content: string | null;
 }
 
 // Helper function to format date as YYYY-MM-DD
@@ -86,6 +87,7 @@ export default function JournalCalendar() {
 					mood: entry.mood || '',
 					entry_date: dateStr,
 					affirmation_content: entry.affirmation_content || null,
+					quote_content: entry.quote_content || entry.affirmation_content || null,
 				};
 
 				if (!groupedEntries[dateStr]) {
@@ -196,6 +198,7 @@ export default function JournalCalendar() {
 					mood: entry.mood || '',
 					entry_date: dateStr,
 					affirmation_content: entry.affirmation_content || null,
+					quote_content: entry.quote_content || entry.affirmation_content || null,
 				};
 			});
 
@@ -331,10 +334,10 @@ export default function JournalCalendar() {
 										<span className="font-medium">{entry.mood}</span>
 									</div>
 									<p className="text-sm mb-3">{entry.content}</p>
-									{entry.affirmation_content && (
+									{entry.quote_content && (
 										<div className="bg-gray-100 p-3 rounded-md italic text-sm">
-											<span className="font-medium">Affirmation:</span>{' '}
-											{entry.affirmation_content}
+											<span className="font-medium">Inspirational Quote:</span>{' '}
+											{entry.quote_content}
 										</div>
 									)}
 								</div>

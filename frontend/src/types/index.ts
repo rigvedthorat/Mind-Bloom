@@ -16,8 +16,12 @@ export interface JournalEntry {
 	id: number;
 	user_id: number;
 	content: string;
-	mood_rating: number;
+	mood: string;
 	affirmation_id: number | null;
+	quote_id: number | null;
+	quote_content: string | null;
+	relevance_score: number | null;
+	context_summary: string | null;
 	entry_date: string;
 	created_at: string;
 	updated_at: string;

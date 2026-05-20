@@ -37,9 +37,11 @@ const formatEntry = (entry: any) => ({
 	created_at: entry.createdAt,
 	updated_at: entry.updatedAt,
 	affirmation_content: entry.quote?.content || entry.affirmation?.content || null,
+	quote_content: entry.quote?.content || null,
 	mood_type: entry.quote?.moodType || entry.affirmation?.moodType || null,
 	relevance_score: entry.quote?.relevanceScore || null,
 	context_summary: entry.quote?.contextSummary || null,
+	quote_source: entry.quote?.source || null,
 });
 
 export const registerJournalRoutes = (app: Express) => {
@@ -93,7 +95,8 @@ export const registerJournalRoutes = (app: Express) => {
 				},
 			});
 
-			// Return the entry with the affirmation
+			// Return the entry with the quote while preserving the old affirmation field
+			// for existing frontend compatibility.
 			res.status(201).json({
 				message: 'Journal entry created successfully',
 				entry: formatEntry(entry),

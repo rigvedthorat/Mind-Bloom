@@ -1,79 +1,103 @@
-# Capstone Starter
+# Mind-Bloom Backend
 
-A capstone starter application.
+The Mind-Bloom backend is a TypeScript and Express REST API for authentication, journal storage, mood-based affirmations, and OpenAI-powered quote recommendations.
 
-## Technology stack
+## Technology Stack
 
-This codebase is written [Typescript](https://www.typescriptlang.org/) and uses [Express](https://expressjs.com/)
-and [Mustache Templates](https://mustache.github.io/).
-It stores data in [PostgreSQL](https://www.postgresql.org/), and a [GitHub Action](https://github.com/features/actions)
-runs tests.
+- Node.js, Express, and TypeScript
+- PostgreSQL
+- Prisma ORM for application database access
+- Knex.js for migrations and seed data
+- OpenAI API for journal-context quote recommendations
+- JWT and bcrypt for authentication
+- Docker and Google Cloud Run deployment support
 
-## Architecture
+## Local Development
 
-The Capstone Starter consists of three free-running processes communicating with one Postgres database.
+1. Install Node.js and PostgreSQL 17.
 
-1.  The data collector is a background process that collects data from one or more sources.
-1.  The data analyzer is another background process that processes collected data.
-1.  The web application displays results to the user.
+   ```shell
+   brew install node postgresql@17
+   brew services run postgresql@17
+   ```
 
-## Local development
+2. Set up environment variables.
 
-1.  Install [node](https://formulae.brew.sh/formula/node) and [PostgreSQL 17](https://formulae.brew.sh/formula/postgresql@17).
-    ```shell
-    brew install node postgresql@17
-    brew services run postgresql@17
-    ```
+   ```shell
+   cp .env.example .env
+   cp .env.local.example .env.local
+   ```
 
-1.  Set up environment variables.
-    ```shell
-    cp .env.example .env 
-    source .env
-    ```
+   Put real secrets only in `.env.local`, which is ignored by Git.
 
-1.  Set up the database.
-    ```shell
-    psql postgres < databases/create_databases.sql
-    npm run migrate
-    DATABASE_URL="postgresql://localhost:5432/capstone_starter_test?user=capstone_starter&password=capstone_starter" npm run migrate
-    ```
+   ```shell
+   export OPENAI_API_KEY="your-openai-api-key"
+   export OPENAI_MODEL="gpt-4o-mini"
+   ```
 
-1.  Run tests.
-    ```shell
-    npm run test
-    ```
+3. Install dependencies.
 
-1.  Run the collector and the analyzer to populate the database, then run the app and navigate to
-    [localhost:8787](http://localhost:8787).
-    ```shell
-    npm run collect
-    npm run analyze
-    npm run start
-    ```
+   ```shell
+   npm install
+   ```
 
-## Create a database schema migration
+4. Set up the database.
 
-Use knex to create a database schema migration.
+   ```shell
+   source .env
+   psql postgres < databases/create_databases.sql
+   npm run migrate
+   DATABASE_URL="postgresql://capstone_starter:capstone_starter@localhost:5432/capstone_starter_test" npm run migrate
+   npx knex seed:run --knexfile databases/knexfile.js
+   npx prisma generate
+   ```
+
+5. Run tests.
+
+   ```shell
+   npm run test
+   ```
+
+6. Run the API locally.
+
+   ```shell
+   source .env
+   source .env.local
+   npm run build
+   npm run start
+   ```
+
+   The API listens on [localhost:8787](http://localhost:8787).
+
+## API Routes
+
+- `POST /api/auth/register` - Register a user.
+- `POST /api/auth/login` - Log in and receive a JWT.
+- `POST /api/journal` - Create a journal entry and receive a context-aware inspirational quote.
+- `GET /api/journal` - List journal entries for the authenticated user.
+- `GET /api/journal/:id` - Get one journal entry.
+- `GET /api/journal/date/:date` - Get entries for a date in `YYYY-MM-DD` format.
+- `GET /api/affirmation/today?mood=Happy` - Get a random mood-based affirmation.
+- `GET /api/affirmations/:mood` - List affirmations for a mood.
+
+## Database Changes
+
+Use Knex for schema migrations:
 
 ```shell
 npx knex migrate:make "[Description of change]" --knexfile databases/knexfile.js
 ```
 
-## Build container
+Update `prisma/schema.prisma` when application models change, then regenerate the Prisma client:
 
-1.  Build container
-    ```shell
-    npm run build
-    docker build -t capstone-starter .
-    ```
+```shell
+npx prisma generate
+```
 
-1.  Run with docker
-    ```shell
-    docker run --env-file .env.docker --entrypoint ./collect.sh capstone-starter
-    docker run --env-file .env.docker --entrypoint ./analyze.sh capstone-starter
-    docker run -p 8787:8787 --env-file .env.docker capstone-starter
-    ```   
+## Build Container
 
-
-
-### Team-4
+```shell
+npm run build
+docker build -t mind-bloom-backend .
+docker run -p 8787:8787 --env-file .env.docker mind-bloom-backend
+```

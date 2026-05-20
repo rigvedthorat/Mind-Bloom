@@ -2,68 +2,69 @@
 
 ## Overview
 
-Mind-Bloom is a web-based journaling and mental wellness application designed to help users track their moods, record daily thoughts, and receive personalized affirmations. The application features a clean, intuitive interface for writing journal entries, mood tracking, and viewing past entries through an interactive calendar.
+Mind-Bloom is a full-stack journaling and mental wellness application that helps users track moods, write daily journal entries, revisit past reflections through a calendar, and receive supportive inspirational quotes matched to their journal context.
 
 ## Features
 
-- **User Authentication**: Secure login and registration system
-- **Mood Tracking**: Select from 12 different mood states to record your emotional state
-- **Journaling**: Write and save daily journal entries
-- **Personalized Affirmations**: Receive mood-based positive affirmations
-- **Calendar View**: Visualize and access past journal entries through an interactive calendar
+- **User Authentication**: Register and log in with JWT-based authentication.
+- **Mood Tracking**: Select from 12 mood states while writing journal entries.
+- **Daily Journaling**: Save mood-based journal entries to PostgreSQL.
+- **AI-Powered Quotes**: Generate context-aware inspirational quotes from journal content and mood through the OpenAI API.
+- **Affirmation Fallbacks**: Return seeded mood-based affirmations when needed.
+- **Calendar View**: Browse past journal entries through an interactive calendar.
 
 ## Technology Stack
 
 ### Backend
 
-- **Node.js & Express**: RESTful API server
-- **TypeScript**: Type-safe JavaScript
-- **PostgreSQL**: Relational database for data persistence
-- **Knex.js**: SQL query builder and migration tool
-- **JWT**: JSON Web Tokens for authentication
-- **Handlebars**: Server-side templating (for non-API views)
+- **Node.js, Express, and TypeScript**: REST API server.
+- **PostgreSQL**: Relational database for users, journal entries, affirmations, and quote recommendations.
+- **Prisma ORM**: Structured database access for application routes and persistence.
+- **Knex.js**: Database migration and seed workflow.
+- **OpenAI API**: Journal-context quote recommendation.
+- **JWT and bcrypt**: Authentication and password hashing.
+- **Docker and Cloud Run**: Container-ready backend deployment path for Google Cloud Platform.
 
 ### Frontend
 
-- **React 19**: UI library
-- **TypeScript**: Type-safe JavaScript
-- **React Router**: Client-side routing
-- **Tailwind CSS**: Utility-first CSS framework
-- **Framer Motion**: Animation library
-- **React Hook Form**: Form validation
-- **React Toastify**: Toast notifications
-- **Day.js & date-fns**: Date manipulation libraries
-- **Lucide React**: Icon library
-- **ShadCN UI**: Component library
+- **React 19 and TypeScript**: Single Page Application.
+- **React Router**: Client-side routing.
+- **Tailwind CSS and ShadCN UI**: Styling and UI components.
+- **Framer Motion**: UI animation.
+- **React Hook Form**: Form handling and validation.
+- **Vite and Vercel**: Frontend build and deployment path.
 
 ## Architecture
 
-Mind-Bloom follows a modern web application architecture with a decoupled frontend and backend:
+Mind-Bloom uses a decoupled frontend and backend:
 
-1. **Frontend**: A React Single Page Application (SPA) that communicates with the backend API
-2. **Backend**: An Express.js server that handles API requests, database operations, and business logic
-3. **Database**: PostgreSQL for storing user accounts, journal entries, and affirmations
+1. **Frontend**: React SPA sends authenticated API requests.
+2. **Backend**: Express API validates JWTs, coordinates journal workflows, and calls OpenAI for quote recommendations.
+3. **Database**: PostgreSQL stores users, journal entries, seeded affirmations, and persisted quote metadata through Prisma models.
 
 ### Data Flow
 
-```
-User -> React Frontend -> Express API -> PostgreSQL Database
-                       <- JSON Response <-
+```text
+User -> React Frontend -> Express API -> Prisma ORM -> PostgreSQL
+                              |
+                              v
+                         OpenAI API
+                              |
+                              v
+                    Personalized quote response
 ```
 
 ## Project Structure
 
-```
-mind-bloom/
-├── backend/                 # Express.js API server
-│   ├── bin/                 # Executable scripts
-│   ├── databases/           # Database migrations and seeds
-│   │   ├── migrations/      # Knex migrations
-│   │   └── seeds/           # Seed data for the database
+```text
+Mind-Bloom/
+├── backend/                 # Express API server
+│   ├── databases/           # Knex migrations and seeds
+│   ├── prisma/              # Prisma schema
 │   └── src/                 # Server source code
-│       ├── databaseSupport/ # Database interaction
-│       ├── public/          # Static files
+│       ├── databaseSupport/ # Database clients
 │       ├── routes/          # API routes
+│       ├── services/        # OpenAI quote recommendation service
 │       ├── views/           # Handlebars templates
 │       └── webSupport/      # Server utilities
 └── frontend/                # React SPA
@@ -72,9 +73,8 @@ mind-bloom/
         ├── api/             # API client
         ├── components/      # Reusable UI components
         ├── context/         # React context providers
-        ├── lib/             # Utility functions
         ├── pages/           # Page components
-        ├── sections/        # Page sections
+        ├── sections/        # Journal and calendar sections
         └── types/           # TypeScript types
 ```
 
@@ -85,129 +85,141 @@ mind-bloom/
 - Node.js 18+ and npm
 - PostgreSQL 17
 - Git
+- OpenAI API key for live AI quote recommendations
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository.
 
    ```bash
-   git clone https://github.com/Meghan31/Mind-Bloom.git
-   cd mind-bloom
+   git clone https://github.com/rigvedthorat/Mind-Bloom.git
+   cd Mind-Bloom
    ```
 
-2. Set up environment variables
+2. Set up backend environment variables.
 
    ```bash
    cp backend/.env.example backend/.env
-   source backend/.env
+   cp backend/.env.local.example backend/.env.local
    ```
 
-3. Install backend dependencies
+   Add your OpenAI key only to `backend/.env.local`. This file is ignored by Git.
+
+   ```bash
+   export OPENAI_API_KEY="your-openai-api-key"
+   export OPENAI_MODEL="gpt-4o-mini"
+   ```
+
+3. Install backend dependencies.
 
    ```bash
    cd backend
    npm install
    ```
 
-4. Set up the database
+4. Set up the database.
 
    ```bash
+   source .env
    psql postgres < databases/create_databases.sql
    npm run migrate
-   source .env
-   DATABASE_URL="postgresql://localhost:5432/capstone_starter_test?user=capstone_starter&password=capstone_starter" npm run migrate
-
-   cd databases
-   npx knex seed:run --knexfile knexfile.js
-   ```
-
-5. Seed the database with initial affirmations
-
-   ```bash
+   DATABASE_URL="postgresql://capstone_starter:capstone_starter@localhost:5432/capstone_starter_test" npm run migrate
    npx knex seed:run --knexfile databases/knexfile.js
+   npx prisma generate
    ```
 
-6. Install frontend dependencies
+5. Install frontend dependencies.
 
    ```bash
    cd ../frontend
    npm install
+   cp .env.example .env.local
    ```
 
-### Running the Application
+## Running the Application
 
-1. Start the backend server
+1. Start the backend server.
 
    ```bash
-   # In the backend directory
+   cd backend
+   source .env
+   source .env.local
+   npm run build
    npm run start
    ```
 
-2. In a new terminal, start the frontend development server
+2. Start the frontend development server in another terminal.
 
    ```bash
-   # In the frontend directory
+   cd frontend
    npm run dev
    ```
 
-3. Open your browser and navigate to <http://localhost:5173>
+3. Open <http://localhost:5173>.
 
 ## API Endpoints
 
 ### Authentication
 
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Log in and receive a JWT token
+- `POST /api/auth/register` - Register a new user.
+- `POST /api/auth/login` - Log in and receive a JWT token.
 
 ### Journal Entries
 
-- `POST /api/journal` - Create a new journal entry
-- `GET /api/journal` - Get all journal entries for the logged-in user
-- `GET /api/journal/:id` - Get a specific journal entry by ID
-- `GET /api/journal/date/:date` - Get entries for a specific date
+- `POST /api/journal` - Create a journal entry and receive a context-aware quote.
+- `GET /api/journal` - Get all journal entries for the logged-in user.
+- `GET /api/journal/:id` - Get a specific journal entry by ID.
+- `GET /api/journal/date/:date` - Get entries for a specific date.
 
 ### Affirmations
 
-- `GET /api/affirmation/today?mood=Happy` - Get a random affirmation for the specified mood
-- `GET /api/affirmations/:mood` - Get all affirmations for a specific mood
+- `GET /api/affirmation/today?mood=Happy` - Get a random affirmation for the specified mood.
+- `GET /api/affirmations/:mood` - Get all affirmations for a specific mood.
 
 ## Testing
 
-Run the backend tests:
+Run backend tests:
 
 ```bash
 cd backend
 npm run test
 ```
 
-## Deployment
-
-### Docker
-
-Build and run with Docker:
+Build the frontend:
 
 ```bash
-# Build the container
-cd backend
+cd frontend
 npm run build
-docker build -t mind-bloom .
-
-# Run the container
-docker run --env-file .env.docker --entrypoint ./app.sh mind-bloom
 ```
 
-## Contributing
+## Deployment
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Frontend: Vercel
+
+Deploy the `frontend/` directory as a Vite project and set:
+
+```bash
+VITE_API_URL="https://your-backend-url/api"
+```
+
+### Backend: Google Cloud Platform
+
+The backend includes Docker and Cloud Build configuration for deploying to Cloud Run. Configure these runtime environment variables in Google Cloud Secret Manager or Cloud Run settings:
+
+```bash
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
+JWT_SECRET="your-production-jwt-secret"
+JWT_EXPIRATION="24h"
+OPENAI_API_KEY="your-openai-api-key"
+OPENAI_MODEL="gpt-4o-mini"
+```
+
+Do not commit `.env` or `.env.local` files with real secrets.
 
 ## Acknowledgments
 
-- [ShadCN UI](https://ui.shadcn.com/) for the component library
+- [OpenAI](https://openai.com/) for AI quote recommendation capabilities
+- [Prisma](https://www.prisma.io/) for ORM tooling
+- [PostgreSQL](https://www.postgresql.org/) for relational data persistence
 - [Tailwind CSS](https://tailwindcss.com/) for styling utilities
-- [React Hook Form](https://react-hook-form.com/) for form handling
-- [Framer Motion](https://www.framer.com/motion/) for animations
-- [PostgreSQL](https://www.postgresql.org/) for database
+- [ShadCN UI](https://ui.shadcn.com/) for component patterns

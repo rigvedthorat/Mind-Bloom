@@ -1,7 +1,7 @@
 {
-  "name": "capstone-starter",
+  "name": "mind-bloom-backend",
   "version": "1.0.0",
-  "main": "buils/app.js",
+  "main": "build/app.js",
   "scripts": {
     "start": "node build/app.js",
     "collect": "node build/collect.js",

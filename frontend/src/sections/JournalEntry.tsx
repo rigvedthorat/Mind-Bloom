@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { journalAPI } from '../api';
 
-interface Affirmation {
+interface QuoteRecommendation {
 	content: string;
 	mood_type: string;
 }
@@ -14,8 +14,8 @@ export default function JournalEntry() {
 	const { selectedMood } = useMood();
 	const [journalEntry, setJournalEntry] = useState<string>('');
 	const [loading, setLoading] = useState<boolean>(false);
-	const [affirmation, setAffirmation] = useState<Affirmation | null>(null);
-	const [showAffirmation, setShowAffirmation] = useState<boolean>(false);
+	const [quote, setQuote] = useState<QuoteRecommendation | null>(null);
+	const [showQuote, setShowQuote] = useState<boolean>(false);
 
 	const saveEntry = async () => {
 		if (!journalEntry.trim()) {
@@ -43,13 +43,14 @@ export default function JournalEntry() {
 			const data = await journalAPI.createEntry(journalEntry, selectedMood);
 			console.log('Success response:', data);
 
-			// Set the affirmation received from API
-			if (data.affirmation) {
-				setAffirmation({
-					content: data.affirmation,
-					mood_type: selectedMood,
+			const quoteContent = data.quote?.content || data.affirmation;
+
+			if (quoteContent) {
+				setQuote({
+					content: quoteContent,
+					mood_type: data.quote?.mood_type || selectedMood,
 				});
-				setShowAffirmation(true);
+				setShowQuote(true);
 			}
 
 			setJournalEntry(''); // Clear the entry after saving
@@ -72,16 +73,16 @@ export default function JournalEntry() {
 	return (
 		<div>
 			<div className="flex flex-col justify-center items-center mb-4">
-				{showAffirmation && affirmation && (
+				{showQuote && quote && (
 					<div className="mt-6 p-4 border rounded-lg max-w-lg text-center bg-primary/10">
 						<h3 className="text-xl font-semibold mb-2">
-							Your Daily Affirmation
+							Your Inspirational Quote
 						</h3>
-						<p className="text-lg italic">{affirmation.content}</p>
+						<p className="text-lg italic">{quote.content}</p>
 						<Button
 							variant="outline"
 							className="mt-4"
-							onClick={() => setShowAffirmation(false)}
+							onClick={() => setShowQuote(false)}
 						>
 							Close
 						</Button>

@@ -5,7 +5,7 @@ import JournalCalendar from '@/sections/JournalCalendar';
 import JournalEntry from '@/sections/JournalEntry';
 import Moods from '@/sections/Moods';
 import { motion } from 'framer-motion';
-import { Calendar } from 'lucide-react';
+import { Calendar, Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authAPI } from '../../api';
@@ -20,7 +20,9 @@ type User = {
 
 const Home = () => {
 	const [user, setUser] = useState<User | null>(null);
-	const darkMode = false;
+	const [darkMode, setDarkMode] = useState(
+		() => localStorage.getItem('mindBloomDarkMode') === 'true'
+	);
 
 	useEffect(() => {
 		const token = localStorage.getItem('token');
@@ -59,6 +61,14 @@ const Home = () => {
 		window.location.href = '/auth/login';
 	};
 
+	const toggleDarkMode = () => {
+		setDarkMode((currentMode) => {
+			const nextMode = !currentMode;
+			localStorage.setItem('mindBloomDarkMode', String(nextMode));
+			return nextMode;
+		});
+	};
+
 	if (!user) {
 		return <div className="loading">Loading...</div>;
 	}
@@ -84,9 +94,14 @@ const Home = () => {
 							<span style={{ color: 'black' }}>Calendar View</span>
 						</Button>
 					</Link>
-					{/* <Button variant="ghost" onClick={() => setDarkMode(!darkMode)}>
+					<Button
+						variant="ghost"
+						className="theme-toggle"
+						aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+						onClick={toggleDarkMode}
+					>
 						{darkMode ? <Sun size={20} /> : <Moon size={20} />}
-					</Button> */}
+					</Button>
 				</div>
 			</div>
 			<div className="screen">

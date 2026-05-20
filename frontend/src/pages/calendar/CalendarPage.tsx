@@ -17,7 +17,9 @@ type User = {
 
 const CalendarPage = () => {
 	const [user, setUser] = useState<User | null>(null);
-	const [darkMode, setDarkMode] = useState(false);
+	const [darkMode, setDarkMode] = useState(
+		() => localStorage.getItem('mindBloomDarkMode') === 'true'
+	);
 
 	useEffect(() => {
 		const token = localStorage.getItem('token');
@@ -56,6 +58,14 @@ const CalendarPage = () => {
 		window.location.href = '/auth/login';
 	};
 
+	const toggleDarkMode = () => {
+		setDarkMode((currentMode) => {
+			const nextMode = !currentMode;
+			localStorage.setItem('mindBloomDarkMode', String(nextMode));
+			return nextMode;
+		});
+	};
+
 	if (!user) {
 		return <div className="loading">Loading...</div>;
 	}
@@ -81,7 +91,12 @@ const CalendarPage = () => {
 							<span style={{ color: 'black' }}>Return Home</span>
 						</Button>
 					</Link>
-					<Button variant="ghost" onClick={() => setDarkMode(!darkMode)}>
+					<Button
+						variant="ghost"
+						className="theme-toggle"
+						aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+						onClick={toggleDarkMode}
+					>
 						{darkMode ? <Sun size={20} /> : <Moon size={20} />}
 					</Button>
 				</div>

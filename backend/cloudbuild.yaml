@@ -23,11 +23,18 @@ steps:
       - "managed"
       - "--allow-unauthenticated"
       - "--set-env-vars"
-      - "NODE_ENV=production"
+      - "NODE_ENV=production,JWT_EXPIRATION=${_JWT_EXPIRATION},OPENAI_MODEL=${_OPENAI_MODEL}"
+      - "--set-secrets"
+      - "DATABASE_URL=${_DATABASE_URL_SECRET}:latest,JWT_SECRET=${_JWT_SECRET_SECRET}:latest,OPENAI_API_KEY=${_OPENAI_API_KEY_SECRET}:latest"
 
 substitutions:
   _REGION: "us-central1"
   _REPOSITORY: "mind-bloom"
+  _JWT_EXPIRATION: "24h"
+  _OPENAI_MODEL: "gpt-4.1-nano"
+  _DATABASE_URL_SECRET: "mind-bloom-database-url"
+  _JWT_SECRET_SECRET: "mind-bloom-jwt-secret"
+  _OPENAI_API_KEY_SECRET: "mind-bloom-openai-api-key"
 
 images:
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$COMMIT_SHA"

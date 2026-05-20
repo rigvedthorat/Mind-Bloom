@@ -10,6 +10,8 @@
     "build": "prisma generate && tsc && cp -r src/views src/public build/",
     "prisma:generate": "prisma generate",
     "clean": "rm -rf ./build",
+    "dev": "npm run watch",
+    "start:dev": "npm run dev",
     "watch": "nodemon src/app.ts",
     "test": "tsc --noEmit && vitest run"
   },

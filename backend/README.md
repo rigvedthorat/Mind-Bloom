@@ -101,3 +101,19 @@ npm run build
 docker build -t mind-bloom-backend .
 docker run -p 8787:8787 --env-file .env.docker mind-bloom-backend
 ```
+
+## Deploy to Cloud Run
+
+Create Google Cloud Secret Manager secrets for:
+
+```shell
+mind-bloom-database-url
+mind-bloom-jwt-secret
+mind-bloom-openai-api-key
+```
+
+Then submit the backend build from the repository root:
+
+```shell
+gcloud builds submit backend --config backend/cloudbuild.yaml
+```

@@ -204,14 +204,18 @@ VITE_API_URL="https://your-backend-url/api"
 
 ### Backend: Google Cloud Platform
 
-The backend includes Docker and Cloud Build configuration for deploying to Cloud Run. Configure these runtime environment variables in Google Cloud Secret Manager or Cloud Run settings:
+The backend includes Docker and Cloud Build configuration for deploying to Cloud Run. Store production secrets in Google Cloud Secret Manager:
 
 ```bash
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
-JWT_SECRET="your-production-jwt-secret"
-JWT_EXPIRATION="24h"
-OPENAI_API_KEY="your-openai-api-key"
-OPENAI_MODEL="gpt-4o-mini"
+mind-bloom-database-url
+mind-bloom-jwt-secret
+mind-bloom-openai-api-key
+```
+
+Then submit the backend build from the repository root:
+
+```bash
+gcloud builds submit backend --config backend/cloudbuild.yaml
 ```
 
 Do not commit `.env` or `.env.local` files with real secrets.

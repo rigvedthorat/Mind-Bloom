@@ -12,6 +12,7 @@ import { registerTestRoutes } from './routes/testRoutes';
 import { staticFileHandler } from './webSupport/staticFileHandler';
 
 export const configureApp = (environment: Environment) => (app: Express) => {
+	process.env.DATABASE_URL = environment.databaseUrl;
 	const dbTemplate = databaseTemplate.create(environment.databaseUrl);
 
 	// Middleware
@@ -23,9 +24,9 @@ export const configureApp = (environment: Environment) => (app: Express) => {
 	health.registerHandler(app, dbTemplate);
 
 	// API Routes
-	registerAuthRoutes(app, dbTemplate);
-	registerJournalRoutes(app, dbTemplate);
-	registerAffirmationRoutes(app, dbTemplate);
+	registerAuthRoutes(app);
+	registerJournalRoutes(app);
+	registerAffirmationRoutes(app);
 	registerTestRoutes(app); // Add test routes
 
 	// Serve static files

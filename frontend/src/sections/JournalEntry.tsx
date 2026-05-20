@@ -3,7 +3,7 @@ import { useMood } from '@/context/MoodContext';
 import { useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// import { journalAPI } from '../api';
+import { journalAPI } from '../api';
 
 interface Affirmation {
 	content: string;
@@ -40,37 +40,7 @@ export default function JournalEntry() {
 				mood: selectedMood,
 			});
 
-			// Use the browser's fetch API directly to see the raw response
-			const token = localStorage.getItem('token');
-			const apiUrl = 'http://localhost:8787/api/journal';
-
-			console.log('API URL:', apiUrl);
-			console.log(
-				'Authorization header:',
-				`Bearer ${token ? token.substring(0, 10) + '...' : 'none'}`
-			);
-
-			const response = await fetch(apiUrl, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify({
-					content: journalEntry,
-					mood: selectedMood,
-				}),
-			});
-
-			console.log('Response status:', response.status);
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				console.error('Error response:', errorText);
-				throw new Error(`API error (${response.status}): ${errorText}`);
-			}
-
-			const data = await response.json();
+			const data = await journalAPI.createEntry(journalEntry, selectedMood);
 			console.log('Success response:', data);
 
 			// Set the affirmation received from API

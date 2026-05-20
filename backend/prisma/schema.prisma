@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  username     String
+  email        String         @unique
+  passwordHash String         @map("password_hash")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  entries      JournalEntry[]
+
+  @@map("users")
+}
+
+model Affirmation {
+  id        Int            @id @default(autoincrement())
+  content   String
+  moodType  String         @map("mood_type")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  entries   JournalEntry[]
+
+  @@map("affirmations")
+}
+
+model InspirationalQuote {
+  id             Int            @id @default(autoincrement())
+  content        String
+  moodType       String         @map("mood_type")
+  relevanceScore Int            @map("relevance_score")
+  contextSummary String?        @map("context_summary")
+  source         String         @default("openai")
+  model          String?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  entries        JournalEntry[]
+
+  @@map("inspirational_quotes")
+}
+
+model JournalEntry {
+  id            Int                 @id @default(autoincrement())
+  userId        Int                 @map("user_id")
+  content       String
+  mood          String
+  affirmationId Int?                @map("affirmation_id")
+  quoteId       Int?                @map("quote_id")
+  entryDate     DateTime            @default(now()) @map("entry_date") @db.Date
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  user          User                @relation(fields: [userId], references: [id])
+  affirmation   Affirmation?        @relation(fields: [affirmationId], references: [id])
+  quote         InspirationalQuote? @relation(fields: [quoteId], references: [id])
+
+  @@index([userId, entryDate])
+  @@map("journal_entries")
+}

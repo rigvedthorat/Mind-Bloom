@@ -2,15 +2,12 @@
 import bcrypt from 'bcrypt';
 import { Express } from 'express';
 import jwt from 'jsonwebtoken';
-import { DatabaseTemplate } from '../databaseSupport/databaseTemplate';
+import { prisma } from '../databaseSupport/prismaClient';
 
 // Secret key for JWT signing - in production, store this in environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export const registerAuthRoutes = (
-	app: Express,
-	dbTemplate: DatabaseTemplate
-) => {
+export const registerAuthRoutes = (app: Express) => {
 	// Register a new user
 	app.post('/api/auth/register', async (req, res) => {
 		try {
@@ -22,13 +19,9 @@ export const registerAuthRoutes = (
 			}
 
 			// Check if email already exists
-			const existingEmails = await dbTemplate.query(
-				'SELECT * FROM users WHERE email = $1',
-				(row) => row,
-				email
-			);
+			const existingUser = await prisma.user.findUnique({ where: { email } });
 
-			if (existingEmails.length > 0) {
+			if (existingUser) {
 				return res.status(400).json({ error: 'Email already registered' });
 			}
 
@@ -37,12 +30,9 @@ export const registerAuthRoutes = (
 			const passwordHash = await bcrypt.hash(password, saltRounds);
 
 			// Insert new user
-			await dbTemplate.execute(
-				'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)',
-				username,
-				email,
-				passwordHash
-			);
+			await prisma.user.create({
+				data: { username, email, passwordHash },
+			});
 
 			res.status(201).json({ message: 'User registered successfully' });
 		} catch (error) {
@@ -64,20 +54,14 @@ export const registerAuthRoutes = (
 			}
 
 			// Check if user exists
-			const users = await dbTemplate.query(
-				'SELECT * FROM users WHERE email = $1',
-				(row) => row,
-				email
-			);
+			const user = await prisma.user.findUnique({ where: { email } });
 
-			if (users.length === 0) {
+			if (!user) {
 				return res.status(401).json({ error: 'Invalid credentials' });
 			}
 
-			const user = users[0];
-
 			// Verify password
-			const passwordMatch = await bcrypt.compare(password, user.password_hash);
+			const passwordMatch = await bcrypt.compare(password, user.passwordHash);
 
 			if (!passwordMatch) {
 				return res.status(401).json({ error: 'Invalid credentials' });

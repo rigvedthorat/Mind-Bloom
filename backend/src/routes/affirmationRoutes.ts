@@ -1,7 +1,7 @@
 // src/routes/affirmationRoutes.ts
 import { Express } from 'express';
 import jwt from 'jsonwebtoken';
-import { DatabaseTemplate } from '../databaseSupport/databaseTemplate';
+import { prisma } from '../databaseSupport/prismaClient';
 
 // Middleware to verify JWT token
 const authenticateToken = (req: any, res: any, next: any) => {
@@ -22,10 +22,10 @@ const authenticateToken = (req: any, res: any, next: any) => {
 	}
 };
 
-export const registerAffirmationRoutes = (
-	app: Express,
-	dbTemplate: DatabaseTemplate
-) => {
+const randomItem = <T>(items: T[]): T | null =>
+	items.length === 0 ? null : items[Math.floor(Math.random() * items.length)];
+
+export const registerAffirmationRoutes = (app: Express) => {
 	// Get today's affirmation for a specific mood
 	app.get(
 		'/api/affirmation/today',
@@ -36,28 +36,38 @@ export const registerAffirmationRoutes = (
 				const mood = req.query.mood || 'Reflective';
 
 				// Get a random affirmation based on mood
-				const affirmations = await dbTemplate.query(
-					'SELECT * FROM affirmations WHERE mood_type = $1 ORDER BY RANDOM() LIMIT 1',
-					(row) => row,
-					mood
-				);
+				const affirmations = await prisma.affirmation.findMany({
+					where: { moodType: String(mood) },
+				});
+				const affirmation = randomItem(affirmations);
 
-				if (affirmations.length === 0) {
+				if (!affirmation) {
 					// If no affirmation for specific mood, try to get a fallback
-					const fallbackAffirmations = await dbTemplate.query(
-						'SELECT * FROM affirmations WHERE mood_type = $1 ORDER BY RANDOM() LIMIT 1',
-						(row) => row,
-						'Reflective'
-					);
+					const fallbackAffirmations = await prisma.affirmation.findMany({
+						where: { moodType: 'Reflective' },
+					});
+					const fallbackAffirmation = randomItem(fallbackAffirmations);
 
-					if (fallbackAffirmations.length === 0) {
+					if (!fallbackAffirmation) {
 						return res.status(404).json({ error: 'No affirmations found' });
 					}
 
-					return res.status(200).json(fallbackAffirmations[0]);
+					return res.status(200).json({
+						id: fallbackAffirmation.id,
+						content: fallbackAffirmation.content,
+						mood_type: fallbackAffirmation.moodType,
+						created_at: fallbackAffirmation.createdAt,
+						updated_at: fallbackAffirmation.updatedAt,
+					});
 				}
 
-				res.status(200).json(affirmations[0]);
+				res.status(200).json({
+					id: affirmation.id,
+					content: affirmation.content,
+					mood_type: affirmation.moodType,
+					created_at: affirmation.createdAt,
+					updated_at: affirmation.updatedAt,
+				});
 			} catch (error) {
 				console.error('Affirmation fetch error:', error);
 				res.status(500).json({ error: 'Internal server error' });
@@ -74,11 +84,9 @@ export const registerAffirmationRoutes = (
 				const mood = req.params.mood;
 
 				// Get all affirmations for the mood
-				const affirmations = await dbTemplate.query(
-					'SELECT * FROM affirmations WHERE mood_type = $1',
-					(row) => row,
-					mood
-				);
+				const affirmations = await prisma.affirmation.findMany({
+					where: { moodType: mood },
+				});
 
 				if (affirmations.length === 0) {
 					return res
@@ -86,7 +94,15 @@ export const registerAffirmationRoutes = (
 						.json({ error: 'No affirmations found for the specified mood' });
 				}
 
-				res.status(200).json(affirmations);
+				res.status(200).json(
+					affirmations.map((affirmation) => ({
+						id: affirmation.id,
+						content: affirmation.content,
+						mood_type: affirmation.moodType,
+						created_at: affirmation.createdAt,
+						updated_at: affirmation.updatedAt,
+					}))
+				);
 			} catch (error) {
 				console.error('Affirmations fetch error:', error);
 				res.status(500).json({ error: 'Internal server error' });

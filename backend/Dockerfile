@@ -4,9 +4,11 @@ ENV NODE_ENV production
 
 WORKDIR /app
 COPY package*.json ./
+COPY prisma ./prisma
 COPY databases ./databases
 RUN npm ci --omit-dev
 COPY build ./build
+COPY prisma ./prisma
 
 COPY ./bin/app.sh ./app.sh
 COPY ./bin/analyze.sh ./analyze.sh

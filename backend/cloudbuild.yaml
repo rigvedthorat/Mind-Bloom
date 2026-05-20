@@ -3,12 +3,12 @@ steps:
     args:
       - "build"
       - "-t"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$COMMIT_SHA"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$BUILD_ID"
       - "."
   - name: "gcr.io/cloud-builders/docker"
     args:
       - "push"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$COMMIT_SHA"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$BUILD_ID"
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "gcloud"
     args:
@@ -16,7 +16,7 @@ steps:
       - "deploy"
       - "mind-bloom-backend"
       - "--image"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$COMMIT_SHA"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$BUILD_ID"
       - "--region"
       - "${_REGION}"
       - "--platform"
@@ -41,4 +41,4 @@ substitutions:
   _OPENAI_API_KEY_SECRET: "mind-bloom-openai-api-key"
 
 images:
-  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$COMMIT_SHA"
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/mind-bloom-backend:$BUILD_ID"
